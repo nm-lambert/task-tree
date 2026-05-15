@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Write};
+use std::fs;
 use std::env;
 
 #[derive(Serialize)]
@@ -107,8 +108,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("\n--- Sub-prompt {} ---", part_num);
         println!("{}\n", p);
 
+        let inst = fs::read_to_string("../instructions.txt").expect("Should read this file");  
+
+        let pfull = p.to_owned() + &inst;
+
         println!("Feeding sub-prompt {} to Ollama...", part_num);
-        let output = call_ollama(p).await?;
+        println!("{}\n", pfull);
+        let output = call_ollama(&pfull).await?;
         
         let filename = format!("out{}.txt", part_num);
         let mut file = File::create(&filename)?;
